@@ -1,0 +1,36 @@
+#Bibliotecas para utilizar o flask
+from flask import Flask, request, jsonify
+#Bibliotecas do Chatbot e do treinamento da IA que é baseada em linguagem natural
+import nltk
+from nltk.chat.util import Chat, reflections
+
+#cria uma instância flask baseado no nome do arquivo
+app = Flask(__name__)
+
+#Base de treinamento do chatbot, aqui ele irá computar as perguntas e escolher uma resposta
+pairs = [
+    #resposta 1
+    ['ola|oi', ['Olá, como posso ajudar?', 'Oi, em que posso ajudar?']],
+    #resposta 2
+    ['consultas|minhas consultas|consulta', ['Suas consultas estão em: ', 'Você pode visualizar suas consultas em: ']],
+    #resposta 3
+    ['cancelar agendamento|cancelar|agendamento', ['Para cancelar agendamento, acesse o link: ', 'Você pode cancelar seus agendamentos em: ']],
+    #resposta 4
+    ['', ['Sua solicitação não foi compreendida.', 'Não entendi.']]
+]
+
+#Aqui será realizado o seu treinamento
+chatbot = Chat(pairs, reflections)
+
+#Rota da api para responder aos usuários
+#Ela funciona via post
+@app.route('/', methods=['POST'])
+def responder():
+    #recebe um pedido e o converte para letras minusculas
+    pedido = request.form['pedido'].lower()
+    #gera uma resposta baseada no chatbot
+    resposta = chatbot.respond(pedido)
+    #a resposta será entregue em formato JSON
+    return jsonify({'resposta': resposta})
+#Com a execução do arquivo, iremos instanciar o servidor flask rest, no caso, nossa api
+app.run(debug=True)
